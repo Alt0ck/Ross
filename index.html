@@ -1,55 +1,43 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visualizador de PDF</title>
-  <style>
-    body { margin: 0; }
-    #canvas-container {
-      width: 100%;
-      height: 100vh;
-      overflow: auto;
-    }
-    canvas {
-      display: block;
-      margin: 0 auto;
-      border: 1px solid #ddd;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de PDF</title>
+    <link rel="stylesheet" href="pdfjs-dist/build/pdf.js">
 </head>
 <body>
-  <div id="canvas-container">
-    <canvas id="pdf-canvas"></canvas>
-  </div>
+    <div id="viewerContainer"></div>
 
-  <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
-  <script>
-    // Ruta al archivo PDF (cambia esto por la ruta de tu archivo)
-   const url = 'Ross.pdf'; 
+    <script src="pdfjs-dist/build/pdf.js"></script>
+    <script>
+        // Obtener el contenedor del visualizador
+        const viewerContainer = document.getElementById('viewerContainer');
 
-    // Obtiene el canvas y el contexto de dibujo
-    const canvas = document.getElementById('pdf-canvas');
-    const ctx = canvas.getContext('2d');
+        // Cargar y mostrar el PDF
+        PDFJS.getDocument({ url: 'Ross.pdf' })
+            .then(pdf => {
+                // Obtener la primera página
+                const page = pdf.getPage(1);
 
-    // Renderiza el PDF
-    PDFJS.getDocument(url).promise.then(pdf => {
-      // Muestra la primera página
-      pdf.getPage(1).then(page => {
-        const viewport = page.getViewport({ scale: 1.5 });
+                // Crear el viewport de la página
+                const viewport = page.getViewport({ scale: 1.0 });
 
-        // Ajusta el tamaño del canvas a la página
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
+                // Crear un canvas para renderizar la página
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
 
-        // Renderiza la página en el canvas
-        const renderContext = {
-          canvasContext: ctx,
-          viewport: viewport
-        };
-        page.render(renderContext);
-      });
-    });
-  </script>
+                // Dibujar la página en el canvas
+                const context = canvas.getContext('2d');
+                page.render({ canvasContext: context, viewport: viewport });
+
+                // Añadir el canvas al contenedor del visualizador
+                viewerContainer.appendChild(canvas);
+            })
+            .catch(err => {
+                console.error('Error al cargar el PDF:', err);
+            });
+    </script>
 </body>
 </html>
